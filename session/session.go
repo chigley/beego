@@ -61,6 +61,7 @@ type managerConfig struct {
 	SessionIDHashKey  string `json:"sessionIDHashKey"`
 	CookieLifeTime    int    `json:"cookieLifeTime"`
 	ProviderConfig    string `json:"providerConfig"`
+	CookieDomain      string `json:"cookieDomain"`
 }
 
 // Manager contains Provider and its configuration.
@@ -127,6 +128,9 @@ func (manager *Manager) SessionStart(w http.ResponseWriter, r *http.Request) (se
 		if manager.config.CookieLifeTime >= 0 {
 			cookie.MaxAge = manager.config.CookieLifeTime
 		}
+		if manager.config.CookieDomain != "" {
+			cookie.Domain = manager.config.CookieDomain
+		}
 		if manager.config.EnableSetCookie {
 			http.SetCookie(w, cookie)
 		}
@@ -145,6 +149,9 @@ func (manager *Manager) SessionStart(w http.ResponseWriter, r *http.Request) (se
 				Secure:   manager.config.Secure}
 			if manager.config.CookieLifeTime >= 0 {
 				cookie.MaxAge = manager.config.CookieLifeTime
+			}
+			if manager.config.CookieDomain != "" {
+				cookie.Domain = manager.config.CookieDomain
 			}
 			if manager.config.EnableSetCookie {
 				http.SetCookie(w, cookie)
@@ -168,6 +175,9 @@ func (manager *Manager) SessionDestroy(w http.ResponseWriter, r *http.Request) {
 			HttpOnly: true,
 			Expires:  expiration,
 			MaxAge:   -1}
+		if manager.config.CookieDomain != "" {
+			cookie.Domain = manager.config.CookieDomain
+		}
 		http.SetCookie(w, &cookie)
 	}
 }
@@ -207,6 +217,9 @@ func (manager *Manager) SessionRegenerateId(w http.ResponseWriter, r *http.Reque
 	}
 	if manager.config.CookieLifeTime >= 0 {
 		cookie.MaxAge = manager.config.CookieLifeTime
+	}
+	if manager.config.CookieDomain != "" {
+		cookie.Domain = manager.config.CookieDomain
 	}
 	http.SetCookie(w, cookie)
 	r.AddCookie(cookie)
