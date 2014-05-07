@@ -62,6 +62,7 @@ type managerConfig struct {
 	CookieLifeTime    int    `json:"cookieLifeTime"`
 	ProviderConfig    string `json:"providerConfig"`
 	CookieDomain      string `json:"cookieDomain"`
+	HttpOnly          bool   `json:"httpOnly"`
 }
 
 // Manager contains Provider and its configuration.
@@ -123,7 +124,7 @@ func (manager *Manager) SessionStart(w http.ResponseWriter, r *http.Request) (se
 		cookie = &http.Cookie{Name: manager.config.CookieName,
 			Value:    url.QueryEscape(sid),
 			Path:     "/",
-			HttpOnly: true,
+			HttpOnly: manager.config.HttpOnly,
 			Secure:   manager.config.Secure}
 		if manager.config.CookieLifeTime >= 0 {
 			cookie.MaxAge = manager.config.CookieLifeTime
@@ -145,7 +146,7 @@ func (manager *Manager) SessionStart(w http.ResponseWriter, r *http.Request) (se
 			cookie = &http.Cookie{Name: manager.config.CookieName,
 				Value:    url.QueryEscape(sid),
 				Path:     "/",
-				HttpOnly: true,
+				HttpOnly: manager.config.HttpOnly,
 				Secure:   manager.config.Secure}
 			if manager.config.CookieLifeTime >= 0 {
 				cookie.MaxAge = manager.config.CookieLifeTime
@@ -172,7 +173,7 @@ func (manager *Manager) SessionDestroy(w http.ResponseWriter, r *http.Request) {
 		expiration := time.Now()
 		cookie := http.Cookie{Name: manager.config.CookieName,
 			Path:     "/",
-			HttpOnly: true,
+			HttpOnly: manager.config.HttpOnly,
 			Expires:  expiration,
 			MaxAge:   -1}
 		if manager.config.CookieDomain != "" {
@@ -205,14 +206,14 @@ func (manager *Manager) SessionRegenerateId(w http.ResponseWriter, r *http.Reque
 		cookie = &http.Cookie{Name: manager.config.CookieName,
 			Value:    url.QueryEscape(sid),
 			Path:     "/",
-			HttpOnly: true,
+			HttpOnly: manager.config.HttpOnly,
 			Secure:   manager.config.Secure,
 		}
 	} else {
 		oldsid, _ := url.QueryUnescape(cookie.Value)
 		session, _ = manager.provider.SessionRegenerate(oldsid, sid)
 		cookie.Value = url.QueryEscape(sid)
-		cookie.HttpOnly = true
+		cookie.HttpOnly = manager.config.HttpOnly
 		cookie.Path = "/"
 	}
 	if manager.config.CookieLifeTime >= 0 {
